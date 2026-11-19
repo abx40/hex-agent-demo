@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131e">
+  <meta name="description" content="Play an 11 by 11 game of Hex against the COMP34111 Group 13 agent.">
+  <title>Play against my Hex agent</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="Hex home">
+        <span class="brand-icon" aria-hidden="true"></span>
+        <span>HEX<span class="brand-divider" aria-hidden="true"></span><span class="brand-group">GROUP 13</span></span>
+      </a>
+      <details class="manual">
+        <summary><span class="question-icon" aria-hidden="true">?</span> How to play</summary>
+        <div class="manual-content">
+          <h2>Connect your edges</h2>
+          <p>Take turns placing one stone on an empty hex. Red links the top and bottom. Blue links the left and right. The first chain of same-colour stones that share edges and connect both of that colour’s sides wins.</p>
+          <h2>Swap rule</h2>
+          <p>Red always opens. On turn two, Blue can play an empty hex or select the highlighted red stone to swap colours. The opening stone stays in place, and the original opener moves next as Blue.</p>
+          <h2>Policy heatmap</h2>
+          <p>See the network’s scores for empty cells. Yellow means the agent used a rule on its last turn. Before a match, yellow previews the agent’s opening cell when it starts.</p>
+        </div>
+      </details>
+    </header>
+
+    <main>
+      <div class="intro">
+        <h1>Play against my <span>Hex agent</span></h1>
+        <p>Connect your sides of the board before the agent connects its own.</p>
+      </div>
+
+      <div class="game-layout">
+        <section class="board-card" aria-labelledby="board-title">
+          <div class="board-top">
+            <h2 id="board-title">Board <span class="board-size">11 × 11</span></h2>
+            <label class="switch-label">
+              <input id="policy-toggle" type="checkbox">
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>Policy heatmap</span>
+            </label>
+          </div>
+          <div class="board-scaffold">
+            <div class="board-frame">
+              <div class="rail rail-red rail-top" aria-hidden="true"><span>RED</span></div>
+              <div class="rail rail-red rail-bottom" aria-hidden="true"><span>RED</span></div>
+              <div class="rail rail-blue rail-left" aria-hidden="true"><span>BLUE</span></div>
+              <div class="rail rail-blue rail-right" aria-hidden="true"><span>BLUE</span></div>
+              <div class="file-labels" aria-hidden="true">
+                <span style="--col:0">A</span><span style="--col:1">B</span><span style="--col:2">C</span><span style="--col:3">D</span><span style="--col:4">E</span><span style="--col:5">F</span><span style="--col:6">G</span><span style="--col:7">H</span><span style="--col:8">I</span><span style="--col:9">J</span><span style="--col:10">K</span>
+              </div>
+              <div class="rank-labels" aria-hidden="true">
+                <span style="--row:0">1</span><span style="--row:1">2</span><span style="--row:2">3</span><span style="--row:3">4</span><span style="--row:4">5</span><span style="--row:5">6</span><span style="--row:6">7</span><span style="--row:7">8</span><span style="--row:8">9</span><span style="--row:9">10</span><span style="--row:10">11</span>
+              </div>
+              <div id="board" role="group" aria-label="11 by 11 Hex board. Red connects top to bottom. Blue connects left to right."></div>
+            </div>
+          </div>
+          <div class="board-footer">
+            <p id="agent-status" class="agent-status" data-state="loading" role="status">Loading agent</p>
+            <span id="tactical-label" class="tactical-label" hidden>Tactical</span>
+            <div id="policy-legend" class="policy-legend" hidden>
+              <span>Lower score</span><span class="policy-scale" aria-hidden="true"></span><span>Higher score</span>
+            </div>
+          </div>
+          <noscript><p class="noscript-note">Enable JavaScript to play Hex.</p></noscript>
+        </section>
+
+        <aside class="game-sidebar" aria-label="Match information and settings">
+          <section class="turn-card" aria-labelledby="status-title">
+            <div class="turn-top">
+              <span id="turn-label" class="turn-label" hidden>Turn <span id="turn-number"></span></span>
+              <span id="status-indicator" class="status-indicator" data-colour="red" aria-hidden="true"></span>
+            </div>
+            <div class="turn-status" role="status" aria-atomic="true">
+              <h2 id="status-title">Ready to play</h2>
+              <p id="status-detail">Choose who starts, then select Start.</p>
+            </div>
+          </section>
+
+          <section class="setup-card" aria-labelledby="opening-title">
+            <fieldset class="opening-choice" aria-describedby="opening-note">
+              <legend id="opening-title">Who starts?</legend>
+              <div class="opening-options">
+                <input type="radio" name="opening-player" id="opening-you" value="you" checked>
+                <label for="opening-you">You</label>
+                <input type="radio" name="opening-player" id="opening-agent" value="agent">
+                <label for="opening-agent">Agent</label>
+                <span class="opening-thumb" aria-hidden="true"></span>
+              </div>
+            </fieldset>
+            <p class="opening-note" id="opening-note">Red moves first.</p>
+            <button id="start-game" type="button" class="start-button">Start</button>
+          </section>
+
+          <section class="roster" aria-label="Current players">
+            <div class="roster-side">
+              <span class="stone-dot stone-red" aria-hidden="true"></span>
+              <div><span class="roster-colour">Red</span><strong id="red-owner">You</strong></div>
+            </div>
+            <div class="roster-side">
+              <span class="stone-dot stone-blue" aria-hidden="true"></span>
+              <div><span class="roster-colour">Blue</span><strong id="blue-owner">Hex agent</strong></div>
+            </div>
+          </section>
+
+          <details class="history">
+            <summary>Move history</summary>
+            <p id="empty-moves">No moves yet.</p>
+            <ol id="moves" class="moves-list"></ol>
+          </details>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="credits">
+      <span>Agent by <strong>COMP34111 Group 13</strong></span>
+      <span id="credits-detail">Pretrained weights by <a href="https://github.com/harbecke/HexHex/blob/90d6cb1c7a983a1cfed907726c5964a22d663dd5/models/11_2w4_2000.pt" target="_blank" rel="noopener noreferrer">HexHex</a></span>
+    </footer>
+  </div>
+</body>
+</html>
